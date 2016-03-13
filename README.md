@@ -1,6 +1,6 @@
 ##MacroCount
 
-A Simple Tool to Count Your Macros
+A Simple R Script to Count Your Macros
 
 Version: **1.0**
 
