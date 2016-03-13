@@ -1,4 +1,4 @@
-##MacroCount.R
+## MacroCount.R
 ## Version 1.0
 ## By: Dmitry Horodetsky
 ##
@@ -12,7 +12,7 @@
 ################
 
 addFood <- function(){
-
+  
   package_portion <- as.numeric(readline(prompt="Enter the portion size found on the Calorie Label (mass or quantity): "))
   package_protein <- as.numeric(readline(prompt="Enter the Protein (grams) found on the Calorie Label: "))
   package_carbs <- as.numeric(readline(prompt="Enter the Carbs (grams) found on the Calorie Label: "))
@@ -31,7 +31,7 @@ addFood <- function(){
   todays_date <- as.character(Sys.Date())
   
   entry_summary <- c(todays_date, portion_protein, portion_carbs, portion_fats, total_cals,currentWeight)
-
+  
   foodLog[nrow(foodLog)+1,] <<- entry_summary
   
   message ("Added to Log!")
@@ -44,10 +44,11 @@ addFood <- function(){
     foodDB[nrow(foodDB)+1,] <<- db_summary
     message("Added to Food Database!")
   }
+  .AutoSave()
+  .Summarize()
 }
 
-.AutoSave()
-.Summarize()
+
 
 #######################
 #Add Food From Database
@@ -65,16 +66,19 @@ addFromDB <- function(){
   db_cals <- round(1.1*(db_protein*4 + db_carbs*4 +db_fats*9) ,digits =2)
   
   todays_date <- as.character(Sys.Date())
-
+  
   entry_summary <- c(todays_date,db_protein,db_carbs,db_fats,db_cals,currentWeight)
   
   foodLog[nrow(foodLog)+1,] <<- entry_summary
   
+  .AutoSave()
+  .Summarize()
+  
   message ("Added to Log!")
+  
 }
 
-.AutoSave()
-.Summarize()
+
 
 ###########################
 #Add a Food to Your Database
@@ -134,7 +138,8 @@ predictByID <- function(){
       foodLog[nrow(foodLog)+1,] <<- entry_summary
       message("Added to Food Log!")
       
-      .AutoSave() & break
+      .AutoSave()
+      .Summarize()  & break
       
     }
     
@@ -143,7 +148,7 @@ predictByID <- function(){
     }
     
   }
-
+  
 }
 
 ##########################
@@ -151,8 +156,9 @@ predictByID <- function(){
 ##########################
 setWeight <- function(){
   currentWeight <<- as.numeric(readline(prompt="Enter your Weight (number only): "))
+  .AutoSave()
 }
-.AutoSave()
+
 
 ###########################
 #Set Your Macro Goals
@@ -183,7 +189,7 @@ setGoals <- function(){
   message("Done!")
   
   .AutoSave()
-
+  
 }
 
 
@@ -199,7 +205,7 @@ setGoals <- function(){
   if (file.exists("MacroCount.RData")){
     load("MacroCount.RData", envir = .GlobalEnv)
   } else {
-
+    
     ##
     #foodLog
     ##
@@ -231,7 +237,7 @@ setGoals <- function(){
     #dailySummary
     ##
     dailySummary <<- data.frame(matrix(ncol = 2, nrow = 4), stringsAsFactors = FALSE)
-    names(dailySummary) <<- c("Current", "Goal")
+    names(dailySummary) <- c("Current", "Goal")
     rownames(dailySummary)[1] <- "Protein (g)"
     rownames(dailySummary)[2] <- "Carbs (g)"
     rownames(dailySummary)[3] <- "Fats (g)"
@@ -255,6 +261,7 @@ setGoals <- function(){
 ##
 
 .Summarize <- function(){
+  
   todays_indices <- which(foodLog$Date==as.character(Sys.Date()))
   foodLog <- foodLog[todays_indices,]
   
@@ -279,4 +286,3 @@ setGoals <- function(){
 .AutoSave <- function(){
   save(foodDB, foodLog, macroGoals, currentWeight, file = "MacroCount.RData")
 }
-
