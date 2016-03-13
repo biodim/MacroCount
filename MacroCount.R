@@ -121,9 +121,9 @@ predictByID <- function(){
     prediction_db <- dailySummary
     
     prediction_db[1,1]<- as.numeric(prediction_db[1,1]+db_protein)
-    prediction_db[2,1]<- as.numeric(prediction_db[2,1]+db_protein)
-    prediction_db[3,1]<- as.numeric(prediction_db[3,1]+db_protein)
-    prediction_db[4,1]<- as.numeric(prediction_db[4,1]+db_protein)
+    prediction_db[2,1]<- as.numeric(prediction_db[2,1]+db_carbs)
+    prediction_db[3,1]<- as.numeric(prediction_db[3,1]+db_fats)
+    prediction_db[4,1]<- as.numeric(prediction_db[4,1]+db_cals)
     
     print(prediction_db)
     message (paste("Your Portion:",portion_size))
