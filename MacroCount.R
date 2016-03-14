@@ -284,5 +284,5 @@ setGoals <- function(){
 ##
 
 .AutoSave <- function(){
-  save(foodDB, foodLog, macroGoals, currentWeight, file = "MacroCount.RData")
+  save(foodDB, foodLog, macroGoals, currentWeight, dailySummary, file = "MacroCount.RData")
 }
