@@ -1,11 +1,117 @@
 ## MacroCount.R
-## Version 1.0
+## Version 1.1
 ## By: Dmitry Horodetsky
 ##
 ## To Do:
 ## 1) Add a Weekly Summary (plot + Info)
+##
+##
+## V 1.1 - addCheat(), open foodDB when using predictByID(), fixed bugs
+##
+
+
+########################################
+#HELPER FUNCTIONS
+########################################
+
+#######################
+#Initialization Script
+#######################
+.initializeModule <- function(){
+  if (file.exists("MacroCount.RData")){
+    load("MacroCount.RData", envir = .GlobalEnv)
+  } else {
+    
+    ##
+    #foodLog
+    ##
+    
+    foodLog <<- data.frame(matrix(ncol = 6, nrow = 0), stringsAsFactors = FALSE)
+    names(foodLog) <<- c("Date", "Proteins", "Carbs", "Fats", "Calories", "Current Weight")
+    
+    ##
+    #macroGoals
+    ##
+    
+    macroGoals <<- data.frame(matrix(ncol = 2, nrow = 4), stringsAsFactors = FALSE)
+    names(macroGoals) <<- c("Macros", "Percentages")
+    rownames(macroGoals)[1] <- "Protein (g)"
+    rownames(macroGoals)[2] <- "Carbs (g)"
+    rownames(macroGoals)[3] <- "Fats (g)"
+    rownames(macroGoals)[4] <- "Calories"
+    
+    macroGoals <<- macroGoals
+    
+    
+    ##
+    #foodDB
+    ##
+    foodDB <<- data.frame(matrix(ncol = 6, nrow = 0), stringsAsFactors = FALSE)
+    names(foodDB) <<- c("Name", "Quantity", "Proteins", "Carbs", "Fats", "Calories")
+    
+    ##
+    #dailySummary
+    ##
+    dailySummary <<- data.frame(matrix(ncol = 2, nrow = 4), stringsAsFactors = FALSE)
+    names(dailySummary) <- c("Current", "Goal")
+    rownames(dailySummary)[1] <- "Protein (g)"
+    rownames(dailySummary)[2] <- "Carbs (g)"
+    rownames(dailySummary)[3] <- "Fats (g)"
+    rownames(dailySummary)[4] <- "Calories"
+    
+    
+    dailySummary <<- dailySummary
+    
+    
+    ##
+    #Weight
+    ##
+    
+    currentWeight <<- NA
+    
+  }
+}
 
 .initializeModule()
+
+#######################
+#Summarize Every Change
+#######################
+
+.Summarize <- function(){
+  
+  todays_indices <- which(foodLog$Date==as.character(Sys.Date()))
+  foodLog <- foodLog[todays_indices,]
+  
+  dailySummary[1,1] <<- sum(as.numeric(foodLog$Proteins))
+  dailySummary[2,1] <<- sum(as.numeric(foodLog$Carbs))
+  dailySummary[3,1] <<- sum(as.numeric(foodLog$Fats))
+  dailySummary[4,1] <<- sum(as.numeric(foodLog$Calories))
+  
+  dailySummary[1,2] <<- macroGoals[1,1]
+  dailySummary[2,2] <<- macroGoals[2,1]
+  dailySummary[3,2] <<- macroGoals[3,1]
+  dailySummary[4,2] <<- macroGoals[4,1]
+  
+  
+}
+
+.Summarize()
+
+##########
+#AutoSave
+##########
+
+.AutoSave <- function(){
+  save(foodDB, foodLog, macroGoals, currentWeight, dailySummary, file = "MacroCount.RData")
+}
+
+##################################################
+##################################################
+
+###########################
+#Module Functions
+###########################
 
 ################
 #Add Food
@@ -105,6 +211,9 @@ addToDatabase <- function(){
 #predictByID (Predict intake, using a foodDB entry)
 ##########################
 predictByID <- function(){
+  #open up the foodDB in case you forgot to do so
+  View(foodDB)
+  
   food_id <- as.numeric(readline(prompt="What is the Food ID? (row in foodDB): "))
   repeat_loop = TRUE
   while(repeat_loop){
@@ -192,97 +301,30 @@ setGoals <- function(){
   
 }
 
+##################
+#Add a Cheat Day
+##################
 
-####################################
-#Helper Functions
-####################################
+addCheat <- function(){
+  
+  #Set your Cheat Day Parameters
+  #I recommend not counting your macros on this day and instead
+  #just logging a huge value for each macro
+  #The default numbers in parentheses set 6490 kcal
+  
+  set_protein <-as.numeric("400")
+  set_carbs <- as.numeric("400")
+  set_fat <-as.numeric ("300")
+  
+  calc_cals <- round(1.1*(4*set_protein+4*set_carbs+9*set_fat),digits = 2)
+  
+  todays_date <- as.character(Sys.Date())
+  
+  entry_summary <- c(todays_date,set_protein,set_carbs,set_fat,calc_cals,currentWeight)
+  foodLog[nrow(foodLog)+1,] <<- entry_summary
+  message("Cheat Day Added!")
 
-##
-#Initialize: Load or Create
-##
-
-.initializeModule <- function(){
-  if (file.exists("MacroCount.RData")){
-    load("MacroCount.RData", envir = .GlobalEnv)
-  } else {
-    
-    ##
-    #foodLog
-    ##
-    
-    foodLog <<- data.frame(matrix(ncol = 6, nrow = 0), stringsAsFactors = FALSE)
-    names(foodLog) <<- c("Date", "Proteins", "Carbs", "Fats", "Calories", "Current Weight")
-    
-    ##
-    #macroGoals
-    ##
-    
-    macroGoals <<- data.frame(matrix(ncol = 2, nrow = 4), stringsAsFactors = FALSE)
-    names(macroGoals) <<- c("Macros", "Percentages")
-    rownames(macroGoals)[1] <- "Protein (g)"
-    rownames(macroGoals)[2] <- "Carbs (g)"
-    rownames(macroGoals)[3] <- "Fats (g)"
-    rownames(macroGoals)[4] <- "Calories"
-    
-    macroGoals <<- macroGoals
-    
-    
-    ##
-    #foodDB
-    ##
-    foodDB <<- data.frame(matrix(ncol = 6, nrow = 0), stringsAsFactors = FALSE)
-    names(foodDB) <<- c("Name", "Quantity", "Proteins", "Carbs", "Fats", "Calories")
-    
-    ##
-    #dailySummary
-    ##
-    dailySummary <<- data.frame(matrix(ncol = 2, nrow = 4), stringsAsFactors = FALSE)
-    names(dailySummary) <- c("Current", "Goal")
-    rownames(dailySummary)[1] <- "Protein (g)"
-    rownames(dailySummary)[2] <- "Carbs (g)"
-    rownames(dailySummary)[3] <- "Fats (g)"
-    rownames(dailySummary)[4] <- "Calories"
-    
-    
-    dailySummary <<- dailySummary
-    
-    
-    ##
-    #Weight
-    ##
-    
-    currentWeight <<- NA
-    
-  }
-}
-
-##
-#Summarize Every Change
-##
-
-.Summarize <- function(){
-  
-  todays_indices <- which(foodLog$Date==as.character(Sys.Date()))
-  foodLog <- foodLog[todays_indices,]
-  
-  dailySummary[1,1] <<- sum(as.numeric(foodLog$Proteins))
-  dailySummary[2,1] <<- sum(as.numeric(foodLog$Carbs))
-  dailySummary[3,1] <<- sum(as.numeric(foodLog$Fats))
-  dailySummary[4,1] <<- sum(as.numeric(foodLog$Calories))
-  
-  dailySummary[1,2] <<- macroGoals[1,1]
-  dailySummary[2,2] <<- macroGoals[2,1]
-  dailySummary[3,2] <<- macroGoals[3,1]
-  dailySummary[4,2] <<- macroGoals[4,1]
-  
-  
 }
 
 
-##
-#AutoSave
-##
 
-.AutoSave <- function(){
-  save(foodDB, foodLog, macroGoals, currentWeight, dailySummary, file = "MacroCount.RData")
-}
