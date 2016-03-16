@@ -2,7 +2,7 @@
 
 A Simple R Script to Count Your Macros
 
-Version: **1.0**
+Version: **1.1**
 
 Dependencies: Make Sure you have R installed
 
@@ -46,9 +46,17 @@ predictByID()
 
 This allows you to see how a food will affect your daily macros without actually adding it to your food log. Select your a food item from your database (row number) and enter your portion. You will get your current daily macro and goal daily macro. You can type "1" to change your portion size, if you find it acceptable type "2" to add it to your food log or "3" to exit
 
+```
+addCheat()
+```
+
+Add a Cheat Day. Not recomended to track the macros on this day, so the default is 400g protein, 400g carbs, 300g fats and 6490 kcal. You can tweak these values
+
+
+
 Everything is autosaved to "MacroCount.RData" in your Working Directory
 
-The Module creates 4 Data.Frames - dailySummary, foodDB, foodLog and macroGoals. You can View them directly for more info 
+The Module creates 4 dataframes - dailySummary, foodDB, foodLog and macroGoals. You can View() them directly for more info 
 
 
 
