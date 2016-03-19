@@ -2,9 +2,9 @@
 
 A Simple R Script to Count Your Macros
 
-Version: **1.1**
+Version: **1.2**
 
-Dependencies: Make Sure you have R installed
+Dependencies: Make Sure you have R installed. Needs "plyr", "ggplot2" and "cowplot" for getMonthlyAvg()
 
 How to use:
 -------------
@@ -52,6 +52,10 @@ addCheat()
 
 Add a Cheat Day. Not recomended to track the macros on this day, so the default is 400g protein, 400g carbs, 300g fats and 6490 kcal. You can tweak these values
 
+```
+getMonthlyAvg()
+```
+Generates your average macro/calorie intake as well as plots them (along with your goals)
 
 
 Everything is autosaved to "MacroCount.RData" in your Working Directory
