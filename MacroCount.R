@@ -1,14 +1,29 @@
 ## MacroCount.R
-## Version 1.1
+## Version 1.2
 ## By: Dmitry Horodetsky
 ##
 ## To Do:
 ## 1) Add a Weekly Summary (plot + Info)
-##
+##    Done!
 ##
 ## V 1.1 - addCheat(), open foodDB when using predictByID(), fixed bugs
 ##
+## V 1.2 - getMonthlyAvg(); generates Average Macros and Calories and plots them
 
+if (!require(plyr, quietly=TRUE)) {
+  install.packages("plyr")
+  library(plyr)
+}
+
+if (!require(ggplot2, quietly=TRUE)) {
+  install.packages("ggplot2")
+  library(ggplot2)
+}
+
+if (!require(cowplot, quietly=TRUE)) {
+  install.packages("cowplot")
+  library(cowplot)
+}
 
 ########################################
 #HELPER FUNCTIONS
@@ -323,8 +338,100 @@ addCheat <- function(){
   entry_summary <- c(todays_date,set_protein,set_carbs,set_fat,calc_cals,currentWeight)
   foodLog[nrow(foodLog)+1,] <<- entry_summary
   message("Cheat Day Added!")
-
+  
 }
 
+#####################
+#Get Monthly Average
+#####################
 
+getMonthlyAvg <- function(){
+  
+  #Get Current Month, Year
+  date <- Sys.Date()
+  date_formatted <- format(date, "%b, %y")
+  
+  #Subset the Log
+  log_subset <- apply(foodLog[1],2, function(x) format(as.Date(x), "%b, %y"))
+  filtered_indixes <- which(log_subset %in% date_formatted)
+  monthly_log <- (foodLog[filtered_indixes,])
+  
+  #Get the Weights early on
+  start_weight <- monthly_log[1,6]
+  end_weight <- monthly_log[nrow(monthly_log),6]
+  
+  #Group by Days
+  monthly_log[1] <-apply(monthly_log[1],2, function(x) (as.numeric(as.Date(x))))
+  
+  monthly_log[2] <- apply(monthly_log[2],2, function(x) (as.numeric((x))))
+  monthly_log[3] <- apply(monthly_log[3],2, function(x) (as.numeric((x))))
+  monthly_log[4] <- apply(monthly_log[4],2, function(x) (as.numeric((x))))
+  monthly_log[5] <- apply(monthly_log[5],2, function(x) (as.numeric((x))))
+  monthly_log[6] <- apply(monthly_log[6],2, function(x) (as.numeric((x))))
+  
+  monthly_log <-ddply(monthly_log,"Date",numcolwise(sum))
+  
+  
+  #Get the Goals
+  goal_protein <- macroGoals[1,1] 
+  goal_carbs <- macroGoals[2,1] 
+  goal_fats <- macroGoals[3,1] 
+  goal_cals <- macroGoals[4,1] 
+  
+  #Get Current averages
+  avg_protein <- round(mean(as.numeric(monthly_log[,2])),digits =2)
+  avg_carbs <- round(mean(as.numeric(monthly_log[,3])),digits =2)
+  avg_fats <-round(mean(as.numeric(monthly_log[,4])),digits =2)
+  avg_cals <-round(mean(as.numeric(monthly_log[,5])),digits =2)
+  
+  message("===========")
+  message("Your Weight:")
+  message(paste("At the Start:",start_weight))
+  message(paste("At the End:",end_weight))
+  message("===========")
+  message("Proteins:")
+  message(paste("Actual:",avg_protein))
+  message(paste("Goal:",goal_protein))
+  message("===========")
+  message("Carbs:")
+  message(paste("Actual:",avg_carbs))
+  message(paste("Goal:",goal_carbs))
+  message("===========")
+  message("Fats:")
+  message(paste("Actual:",avg_fats))
+  message(paste("Goal:",goal_fats))
+  message("===========")
+  message("Calories:")
+  message(paste("Actual:",avg_cals))
+  message(paste("Goal:",goal_cals))
+  message("===========")
+  
+  #Macros Plot
+  gram_df <- data.frame(matrix(nrow = 3))
+  gram_df$macros <- c("protein", "carbs","fats")
+  gram_df[1]<-NULL
+  gram_df$grams <- c(avg_protein, avg_carbs,avg_fats)
+  gram_df$hline <- c(goal_protein,goal_carbs,goal_fats)
+  
+  bp <- ggplot(gram_df, aes(x=macros, y=grams)) +
+    geom_bar(position=position_dodge(), stat="identity")
+  bp <- bp + geom_errorbar(width=0.7, aes(y=hline, ymax=hline, ymin=hline), colour="#AA0000")
+  bp <- bp+ geom_text(aes(x=macros, y=grams, label=grams,vjust=-0.5))
+  
+  #Calorie Plot
+  cal_df <-data.frame(matrix(nrow = 1))
+  cal_df$calories <- c("average")
+  cal_df[1]<-NULL
+  cal_df$kcal <- c(avg_cals)
+  cal_df$hline <- c(goal_cals)
+  
+  bp2 <- ggplot(cal_df, aes(x=calories, y=kcal)) +
+    geom_bar(position=position_dodge(), stat="identity", width =.5)
+  bp2 <- bp2 + geom_errorbar(width=0.3, aes(y=hline, ymax=hline, ymin=hline), colour="#AA0000")
+  bp2 <- bp2 + geom_text(aes(x=calories, y=kcal, label=kcal,vjust=-0.5))
+  
+  theme_set(theme_gray())
+  plot_grid(bp, bp2, labels = c("A", "B"))
+  
+}
 
