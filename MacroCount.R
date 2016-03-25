@@ -229,6 +229,8 @@ predictByID <- function(){
   #open up the foodDB in case you forgot to do so
   View(foodDB)
   
+  .Summarize()
+  
   food_id <- as.numeric(readline(prompt="What is the Food ID? (row in foodDB): "))
   repeat_loop = TRUE
   while(repeat_loop){
